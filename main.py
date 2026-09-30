@@ -1,17 +1,33 @@
 from dotenv import load_dotenv
-from langchain_openai import OpenAIEmbeddings
+from langchain_mistralai import MistralAIEmbeddings
 from langchain_community.vectorstores import Chroma
-from langchain_mistralai import ChatMistralAI
+from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
 
 load_dotenv()
 
-embedding_model = OpenAIEmbeddings()
+embedding_model = MistralAIEmbeddings()
 
-vectorstore = Chroma(
-    persist_directory= "chroma_db",
-    embedding_function=embedding_model
+data = PyPDFLoader("document loaders/deeplearning.pdf")
+docs = data.load()
+
+splitter = RecursiveCharacterTextSplitter(
+    chunk_size = 1000,
+    chunk_overlap = 200
 )
+
+chunks = splitter.split_documents(docs)
+
+
+vectorstore = Chroma.from_documents(
+    documents= chunks,
+    embedding=embedding_model,
+    persist_directory="chroma_db"
+)
+
 
 retriever = vectorstore.as_retriever(
     search_type = "mmr",
@@ -22,7 +38,7 @@ retriever = vectorstore.as_retriever(
     }
 )
 
-llm = ChatMistralAI(model = "mistral-small-2506")
+llm = ChatGroq(model = "openai/gpt-oss-120b")
 
 #prompt template 
 prompt = ChatPromptTemplate.from_messages(

@@ -5,9 +5,10 @@ import os
 
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_openai import OpenAIEmbeddings
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_mistralai import MistralAIEmbeddings
 from langchain_community.vectorstores import Chroma
-from langchain_mistralai import ChatMistralAI
+from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 
 
@@ -43,7 +44,7 @@ if uploaded_file:
 
             chunks = splitter.split_documents(docs)
 
-            embeddings = OpenAIEmbeddings()
+            embeddings = MistralAIEmbeddings()
 
             vectorstore = Chroma.from_documents(
                 documents=chunks,
@@ -59,7 +60,7 @@ if uploaded_file:
 
 if os.path.exists("chroma_db"):
 
-    embeddings = OpenAIEmbeddings()
+    embeddings = MistralAIEmbeddings()
 
     vectorstore = Chroma(
         persist_directory="chroma_db",
@@ -75,7 +76,7 @@ if os.path.exists("chroma_db"):
         }
     )
 
-    llm = ChatMistralAI(model="mistral-small-2506")
+    llm = ChatGroq(model="openai/gpt-oss-120b")
 
     prompt = ChatPromptTemplate.from_messages(
         [
